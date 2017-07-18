@@ -1,21 +1,22 @@
 import {Injectable} from '@angular/core';
 import {Http, Response} from '@angular/http';
-import {Observable} from 'rxjs/Observable';
 import {Container} from '../models/container';
 import {Operation} from '../models/operation';
 import {AppConfig} from './config.service';
 import {LxdResponse} from '../models/lxdResponse';
+import {Observable} from 'rxjs/Observable';
+import 'rxjs/add/observable/forkJoin';
 
 @Injectable()
 export class ContainerService {
     constructor(private conf: AppConfig, private http: Http) {}
 
     public getContainers(): Observable<Observable<Container[]>> {
-        let observableBatch = [];
+        let observableBatch = Array<Observable<Container>>();
         return this.http.get(`${this.conf.lxdBaseUrl}/containers`)
             .map(res => {
                 (res.json() as LxdResponse).metadata.forEach(
-                    (url) => observableBatch.push(this._getContainer(url))
+                    (url: string) => observableBatch.push(this._getContainer(url))
                 );
                 return Observable.forkJoin(observableBatch);
             }).catch(this.handleError);
@@ -78,6 +79,12 @@ export class ContainerService {
 
     public delete(id: string) {
         return this.http.delete(`${this.conf.lxdBaseUrl}/containers/${id}`)
+            .catch(this.handleError);
+    }
+
+    public create(data: any): Observable<Operation> {
+        return this.http.post(`${this.conf.lxdBaseUrl}/containers`, data)
+            .map((res: Response) => ((res.json() as LxdResponse).metadata as Operation))
             .catch(this.handleError);
     }
 

@@ -2,7 +2,7 @@
   "angularCompilerOptions": {
     "skipMetadataEmit": true,
     "genDir": "src/aot/",
-    "debug": true
+    "debug": false
   },
   "compilerOptions": {
     "target": "es2015",

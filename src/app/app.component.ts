@@ -1,54 +1,24 @@
-import {Component, ViewContainerRef}       from '@angular/core';
-import {Router, ROUTER_DIRECTIVES, Routes} from '@angular/router';
-import {HTTP_PROVIDERS}    from '@angular/http';
-import {ContainerService}     from './services/container.service';
-import {ContainersComponent} from './components/container/containers.component';
-import {ContainerDetailComponent} from './components/container/container-detail.component';
-import {HeaderComponent} from './menu.component';
-import {Toasty, ToastyService} from 'ng2-toasty/ng2-toasty';
-import {Modal, BS_MODAL_PROVIDERS} from 'angular2-modal/plugins/bootstrap';
-import {AppConfig} from './services/config.service';
-import {DialogRef} from 'angular2-modal/angular2-modal';
-import {ImagesComponent} from './components/container/images.component';
-import {ProfilesComponent} from './components/container/profiles.component';
-import {ImagesService} from './services/images.service';
-import {ProfilesService} from './services/profiles.service';
+import { Component, ViewContainerRef } from '@angular/core';
+import { ToastyService } from 'ng2-toasty';
+import { AppConfig } from './services/config.service';
+import { Overlay, DialogRef } from 'angular2-modal';
+import { Modal } from 'angular2-modal/plugins/bootstrap';
 
 
 @Component({
     selector: 'lxd-app',
-    viewProviders: [...BS_MODAL_PROVIDERS],
-    templateUrl: 'assets/templates/app.component.html',
-    directives: [
-        ROUTER_DIRECTIVES,
-        HeaderComponent,
-        Toasty
-    ],
-    providers: [
-        HTTP_PROVIDERS,
-        ContainerService,
-        ImagesService,
-        ProfilesService
-    ]
+    templateUrl: 'app.component.html',
 })
-
-@Routes([
-    {path: '/', component: ContainersComponent},
-    {path: '/containers', component: ContainersComponent},
-    {path: '/container/:id',  component: ContainerDetailComponent},
-    {path: '/images',  component: ImagesComponent},
-    {path: '/profiles',  component: ProfilesComponent}
-])
 
 export class AppComponent {
     title: string = 'LXD WebUI';
 
     constructor(private appConfig: AppConfig,
-                private router: Router,
                 private toastyService: ToastyService,
-                public modal: Modal, viewContainer: ViewContainerRef) {
-        modal.defaultViewContainer = viewContainer;
-        appConfig.onChangeConfig.subscribe(e => this.checkLxdConnection());
+                public overlay: Overlay, 
+                public vcRef: ViewContainerRef,
+                public modal: Modal) {
+        appConfig.onChangeConfig.subscribe((e: any) => this.checkLxdConnection());
         this.checkLxdConnection();
     }
 
@@ -60,7 +30,7 @@ export class AppComponent {
             );
     }
 
-    onSuccessConnection(result) {
+    onSuccessConnection(result: any) {
         if (result.metadata && result.metadata.auth !== 'trusted') {
             this.openModalUntrusted();
             return;
@@ -93,7 +63,7 @@ export class AppComponent {
             ));
     }
 
-    onModalConnectionClickOk(result) {
+    onModalConnectionClickOk(result: any) {
         this.checkLxdConnection();
         return;
     }

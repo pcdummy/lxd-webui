@@ -1,26 +1,25 @@
 import {Component} from '@angular/core';
-import {OnActivate, Router, RouteSegment} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {Container} from '../../models/container';
 import {ContainerService} from '../../services/container.service';
-import {ToastyService} from 'ng2-toasty/ng2-toasty';
+import {ToastyService} from 'ng2-toasty';
 
 // FIXME: stop typescript error
-declare var Terminal;
+declare var Terminal: any;
+const ROUTE_PARAM_NAME = 'id';
 
 @Component({
     selector: 'lxd-container-detail',
-    templateUrl: 'assets/templates/container-detail.component.html'
+    templateUrl: 'container-detail.component.html'
 })
-export class ContainerDetailComponent implements OnActivate {
+export class ContainerDetailComponent {
     container: Container;
 
     constructor(private containerService: ContainerService,
+                private route: ActivatedRoute,
                 private router: Router,
                 private toastyService: ToastyService) {
-    }
-
-    routerOnActivate(curr: RouteSegment): void {
-        let id = curr.getParam('id');
+        let id = this.route.snapshot.params[ROUTE_PARAM_NAME];
         this.containerService.getContainer(id)
             .subscribe(
                 container => this.container = container,
@@ -91,7 +90,7 @@ export class ContainerDetailComponent implements OnActivate {
 
                     term.open(document.getElementById('console'));
 
-                    term.on('data', function (data) {
+                    term.on('data', function (data: any) {
                         sock.send(new Blob([data]));
                     });
 
@@ -123,9 +122,12 @@ export class ContainerDetailComponent implements OnActivate {
 
     deleteAction() {
         this.containerService.delete(this.container.name).subscribe(
-            res => {
+            (res: any) => {
+                setTimeout(() => {
+                    this.router.navigate([ '/containers' ]);
+                }, 500);
             },
-            err => this.toastyService.error(this.getToastyOptions(err))
+            (err: any) => this.toastyService.error(this.getToastyOptions(err))
         );
     }
 

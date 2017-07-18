@@ -1,0 +1,33 @@
+<html>
+<head>
+    <title>LXD-WebUI</title>
+    <!-- base url -->
+    <base href="/">
+    <meta name="description" content="LXD WebUI is a frontend to manage the containers and images of LXD server. This web interface is like << LXC web panel >> but for LXD">
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Google Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- PACE -->
+    <link href="/vendors/pace/themes/orange/pace-theme-flash.css" rel="stylesheet" />
+    <script src="/vendors/pace/pace.min.js"></script>
+</head>
+
+<!-- 3. Display the application -->
+<body>
+    <lxd-app>
+        <div class="loader-wrapper">
+            <div class="loader">
+                <div class="box"></div>
+                <div class="box"></div>
+                <div class="box"></div>
+                <div class="box"></div>
+            </div>
+        </div>
+    </lxd-app>
+    <script src="/assets/js/term.js"></script>
+
+    <script type="text/javascript" src="/bundle.js"></script>    
+</html>

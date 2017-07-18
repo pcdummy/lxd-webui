@@ -12,11 +12,11 @@ export class ImagesService {
     }
 
     public getImages(): Observable<Observable<Image[]>> {
-        let observableBatch = [];
+        let observableBatch = Array<Observable<Image>>();
         return this.http.get(`${this.conf.lxdBaseUrl}/images`)
             .map(res => {
                 (res.json() as LxdResponse).metadata.forEach(
-                    (url) => observableBatch.push(this._getImage(url))
+                    (url: string) => observableBatch.push(this._getImage(url))
                 );
                 return Observable.forkJoin(observableBatch);
             }).catch(this.handleError);
@@ -34,8 +34,14 @@ export class ImagesService {
             .catch(this.handleError);
     }
 
-    public delete(id: string) {
+    public delete(id: string): Observable<Operation> {
         return this.http.delete(`${this.conf.lxdBaseUrl}/images/${id}`)
+            .map((res: Response) => ((res.json() as LxdResponse).metadata as Operation))
+            .catch(this.handleError);
+    }
+
+    public update(data: Image): Observable<Response> {
+        return this.http.put(`${this.conf.lxdBaseUrl}/images/${data.fingerprint}`, data)
             .catch(this.handleError);
     }
 

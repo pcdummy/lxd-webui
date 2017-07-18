@@ -12,11 +12,11 @@ export class ProfilesService {
     }
 
     public getProfiles(): Observable<Observable<Profile[]>> {
-        let observableBatch = [];
+        let observableBatch = Array<Observable<Profile>>();
         return this.http.get(`${this.conf.lxdBaseUrl}/profiles`)
             .map(res => {
                 (res.json() as LxdResponse).metadata.forEach(
-                    (url) => observableBatch.push(this._getProfile(url))
+                    (url: string) => observableBatch.push(this._getProfile(url))
                 );
                 return Observable.forkJoin(observableBatch);
             }).catch(this.handleError);

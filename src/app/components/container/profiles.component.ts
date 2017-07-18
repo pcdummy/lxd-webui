@@ -1,14 +1,13 @@
 import {Component, OnInit} from '@angular/core';
-import {Router} from '@angular/router';
 import {Profile} from '../../models/profile';
 import {ProfilesService} from '../../services/profiles.service';
 import {AppConfig} from '../../services/config.service';
-import {ToastyService} from 'ng2-toasty/ng2-toasty';
+import {ToastyService} from 'ng2-toasty';
 import {Observable} from 'rxjs/Observable';
 
 @Component({
     selector: 'lxd-profiles',
-    templateUrl: 'assets/templates/profiles.component.html'
+    templateUrl: 'profiles.component.html'
 })
 export class ProfilesComponent implements OnInit {
     public profiles: Profile[];
@@ -19,10 +18,9 @@ export class ProfilesComponent implements OnInit {
     }
 
     constructor(private conf: AppConfig,
-                private router: Router,
                 private profilesService: ProfilesService,
                 private toastyService: ToastyService) {
-        conf.onChangeConfig.subscribe( e => this.getProfiles() );
+        this.conf.onChangeConfig.subscribe( (e: any) => this.getProfiles() );
     }
 
     onSelect(profile: Profile) {

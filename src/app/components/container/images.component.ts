@@ -1,17 +1,21 @@
-import {Component, OnInit} from '@angular/core';
-import {Router} from '@angular/router';
+import {Component, OnInit, ViewContainerRef} from '@angular/core';
 import {Image} from '../../models/image';
 import {ImagesService} from '../../services/images.service';
 import {AppConfig} from '../../services/config.service';
-import {ToastyService} from 'ng2-toasty/ng2-toasty';
+import {ToastyService} from 'ng2-toasty';
 import {Observable} from 'rxjs/Observable';
-import {DateFormatPipe} from 'angular2-moment';
-import {FileSizeFormatPipe} from '../../filters/fileSize';
+import {ContainerService} from '../../services/container.service';
+
+import { DialogRef } from 'angular2-modal';
+import { overlayConfigFactory } from "angular2-modal";
+import { Modal, BSModalContext } from 'angular2-modal/plugins/bootstrap';
+import {
+    CreateContainerModalComponent, CreateContainerModalContext
+} from './create-container-modal.component';
 
 @Component({
     selector: 'lxd-images',
-    templateUrl: 'assets/templates/images.component.html',
-    pipes: [DateFormatPipe, FileSizeFormatPipe]
+    templateUrl: 'images.component.html'
 })
 export class ImagesComponent implements OnInit {
     public images: Image[];
@@ -22,10 +26,11 @@ export class ImagesComponent implements OnInit {
     }
 
     constructor(private conf: AppConfig,
-                private router: Router,
                 private imagesService: ImagesService,
-                private toastyService: ToastyService) {
-        conf.onChangeConfig.subscribe( e => this.getImages() );
+                private containerService: ContainerService,
+                private toastyService: ToastyService,
+                public modal: Modal, viewContainer: ViewContainerRef) {
+        this.conf.onChangeConfig.subscribe( (event: any) => this.getImages() );
     }
 
     onSelect(image: Image) {
@@ -47,5 +52,69 @@ export class ImagesComponent implements OnInit {
             timeout: 3000,
             theme: 'material'
         };
+    }
+
+    applyChange(image: Image) {
+        this.imagesService.update(image).subscribe(
+            res => {
+                if (res.json().status_code >= 400) {
+                    this.toastyService.error(
+                        this.getToastyOptions(res.json().err, res.json().status)
+                    );
+                } else {
+                    this.toastyService.success(
+                        this.getToastyOptions(undefined, res.json().status)
+                    );
+                }
+            },
+            err => this.toastyService.error(this.getToastyOptions(err))
+        );
+    }
+
+    launchAction(image: Image) {
+        let data = {
+            'name': '',
+            'source': {
+                'type': 'image',
+                'fingerprint': image.fingerprint
+            }
+        };
+        this.modal.open(
+            CreateContainerModalComponent,
+            overlayConfigFactory(new CreateContainerModalContext(image, data), BSModalContext)
+        )
+            .then((dialog: DialogRef<any>) => {
+                dialog.result.then((result) => {
+                    if (result) {
+                        this.containerService.create(data).subscribe(
+                            operation => this.waitOperation(operation.id),
+                            err => this.toastyService.error(this.getToastyOptions(err))
+                        );
+                    }
+                });
+        });
+    }
+
+    deleteAction(image: Image) {
+        this.imagesService.delete(image.fingerprint).subscribe(
+            operation => this.waitOperation(operation.id),
+            err => this.toastyService.error(this.getToastyOptions(err))
+        );
+    }
+
+    waitOperation(operationId: string) {
+        this.imagesService.waitOperation(operationId).subscribe(operation => {
+                if (operation.status_code >= 400) {
+                    this.toastyService.error(
+                        this.getToastyOptions(operation.err, operation.status)
+                    );
+                } else {
+                    this.toastyService.success(
+                        this.getToastyOptions(undefined, operation.status)
+                    );
+                }
+            },
+            err => this.toastyService.error(this.getToastyOptions(err))
+        );
     }
 }
